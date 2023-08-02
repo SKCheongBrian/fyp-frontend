@@ -1,18 +1,21 @@
-import "./App.css";
 import AceEditor from "react-ace";
 
-import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/theme-github";
 import "ace-builds/src-noconflict/ext-language_tools";
+import "ace-builds/src-noconflict/mode-java";
+import "ace-builds/src-noconflict/theme-twilight";
 
 import axios from "axios";
 
 import parser from "./lib/parser";
 
 import { useState } from "react";
+import "./App.css";
+import StackVisualisation from "./components/stack-visualisation";
 
 function App() {
   const [userInput, setUserInput] = useState("");
+  const [isAgendaLoaded, setIsAgendaLoaded] = useState(false);
+  const [stackFrames, setStackFrames] = useState([]);
 
   const handleCodeChange = (newCode) => {
     setUserInput(newCode);
@@ -35,12 +38,37 @@ function App() {
       console.log(userInput);
       const ast = parser.parse(userInput);
       console.log(ast);
-      const res = await axios.get("http://localhost:4000/interpreter", {
-        params: {
-          data: ast,
-        }
-      })
+      const res = await axios.post("http://localhost:4000/interpreter", ast);
       console.log(res);
+      if (res.status === 200) {
+        setIsAgendaLoaded(true);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      const res = await axios.get("http://localhost:4000/interpreter/reset");
+      console.log(res);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+    setStackFrames([]);
+  };
+
+  const handleEvalStep = async () => {
+    try {
+      if (isAgendaLoaded) {
+        const res = await axios.get("http://localhost:4000/interpreter/step");
+        console.log(res);
+        if (res.data !== "") {
+          setStackFrames(res.data);
+        }
+      } else {
+        console.error("Agenda is not loaded!");
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -48,12 +76,18 @@ function App() {
 
   return (
     <div className="container">
-      <h1 style={{marginBottom:36}}>Class Diagram</h1>
+      <h1 style={{ marginBottom: 36 }}>Class Diagram</h1>
       <div className="row">
         <div className="col-lg-6">
-          <h2 style={{marginBottom:18}}>Code Editor</h2>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h2>Code Editor</h2>
+            <button onClick={handleReset} className="btn btn-danger btn-sm">
+              Reset
+            </button>
+          </div>
           <AceEditor
             mode="java"
+            theme="twilight"
             value={userInput}
             onChange={handleCodeChange}
             name="java-code-editor"
@@ -81,15 +115,23 @@ function App() {
               />
             </div>
             <div className="col-auto">
-              <button onClick={handleSubmit} className="btn btn-primary">
+              <button onClick={handleSubmit} className="btn btn-primary btn-sm">
                 Submit
+              </button>
+            </div>
+            <div className="col-auto">
+              <button
+                onClick={handleEvalStep}
+                className="btn btn-success btn-sm"
+              >
+                Eval Step
               </button>
             </div>
           </div>
         </div>
         <div className="col-lg-6">
-          <h2 style={{marginBottom:18}}>Visualization</h2>
-          {/*  visualization component */}
+          <h2 style={{ marginRight: "10px" }}>Visualization</h2>
+          <StackVisualisation stackFrames={stackFrames} />
         </div>
       </div>
     </div>
