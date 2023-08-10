@@ -33,8 +33,19 @@ function App() {
     reader.readAsText(file);
   };
 
+  const handleTest = async () => {
+    try {
+      const ast = parser.parse(userInput);
+      const res = await axios.post("http://localhost:4000/test", ast);
+      console.log(res.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   const handleSubmit = async () => {
     try {
+      console.log("userInput:---");
       console.log(userInput);
       const ast = parser.parse(userInput);
       console.log(ast);
@@ -48,15 +59,17 @@ function App() {
     }
   };
 
+  // test code
   const handleReset = async () => {
     try {
       const res = await axios.get("http://localhost:4000/interpreter/reset");
-      console.log(res);
+      console.log(res.data);
     } catch (error) {
       console.error("Error:", error);
     }
     setStackFrames([]);
   };
+  // end of test code
 
   const handleEvalStep = async () => {
     try {
@@ -126,6 +139,16 @@ function App() {
               >
                 Eval Step
               </button>
+            </div>
+            <div className="col-auto">
+              {/* ! this is test code */}
+              <button
+                onClick={handleTest}
+                className="btn btn-warning btn-sm"
+              >
+                Test
+              </button>
+              {/* end of test code */}
             </div>
           </div>
         </div>
