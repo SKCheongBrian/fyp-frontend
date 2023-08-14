@@ -6,6 +6,8 @@ import "ace-builds/src-noconflict/theme-twilight";
 
 import axios from "axios";
 
+import { parse } from "flatted";
+
 import parser from "./lib/parser";
 
 import { useState } from "react";
@@ -37,7 +39,10 @@ function App() {
     try {
       const ast = parser.parse(userInput);
       const res = await axios.post("http://localhost:4000/test", ast);
-      console.log(res.data);
+      const newAst = res.data.AST;
+      const scopes = parse(res.data.scopes);
+      console.log(newAst);
+      console.log(scopes);
     } catch (error) {
       console.error("Error:", error);
     }
