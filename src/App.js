@@ -13,11 +13,15 @@ import parser from "./lib/parser";
 import { useState } from "react";
 import "./App.css";
 import StackVisualisation from "./components/stack-visualisation";
+import ErrorBox from "./components/errorbox";
 
 function App() {
   const [userInput, setUserInput] = useState("");
   const [isAgendaLoaded, setIsAgendaLoaded] = useState(false);
   const [stackFrames, setStackFrames] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isErrorVisible, setIsErrorVisible] = useState(false);
+
 
   const handleCodeChange = (newCode) => {
     setUserInput(newCode);
@@ -76,20 +80,34 @@ function App() {
   };
   // end of test code
 
+  function isError(obj){
+    return obj.hasOwnProperty("Error");
+}
+
   const handleEvalStep = async () => {
     try {
-      if (isAgendaLoaded) {
-        const res = await axios.get("http://localhost:4000/interpreter/step");
-        console.log(res);
-        if (res.data !== "") {
-          setStackFrames(res.data);
-        }
-      } else {
-        console.error("Agenda is not loaded!");
+      if (!isAgendaLoaded) {
+        setErrorMessage("Agenda is not loaded!");
+        setIsErrorVisible(true);
+        return;     
       }
+      const res = await axios.get("http://localhost:4000/interpreter/step");
+      console.log("res", res);
+      if (res.data === "") {
+        return;
+      }
+      if (isError(res.data)) {
+        setErrorMessage(res.data.Error);
+        setIsErrorVisible(true);
+      }
+      setStackFrames(res.data);
     } catch (error) {
       console.error("Error:", error);
     }
+  };
+
+  const handleCloseError = () => {
+    setIsErrorVisible(false);
   };
 
   return (
@@ -162,6 +180,9 @@ function App() {
           <StackVisualisation stackFrames={stackFrames} />
         </div>
       </div>
+      {isErrorVisible && (
+        <ErrorBox message={errorMessage} onClose={handleCloseError} />
+      )}
     </div>
   );
 }
