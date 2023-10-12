@@ -8,8 +8,6 @@ import axios from "axios";
 
 import { parse } from "flatted";
 
-import parser from "./lib/parser";
-
 import { useState } from "react";
 import "./App.css";
 import StackVisualisation from "./components/stack-visualisation";
@@ -21,7 +19,6 @@ function App() {
   const [stackFrames, setStackFrames] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isErrorVisible, setIsErrorVisible] = useState(false);
-
 
   const handleCodeChange = (newCode) => {
     setUserInput(newCode);
@@ -41,24 +38,33 @@ function App() {
 
   const handleTest = async () => {
     try {
-      const ast = parser.parse(userInput);
-      const res = await axios.post("http://localhost:4000/test", ast);
-      const newAst = res.data.AST;
-      const scopes = parse(res.data.scopes);
-      console.log(newAst);
-      console.log(scopes);
+      // const ast = parser.parse(userInput);
+      const res = await axios.post("http://localhost:4000/test", {
+        program: userInput,
+      });
+      if (isError(res.data)) {
+        setErrorMessage(res.data.Error);
+        setIsErrorVisible(true);
+      } else {
+        const newAst = res.data.AST;
+        const scopes = parse(res.data.scopes);
+        console.log(newAst);
+        console.log(scopes);
+      }
     } catch (error) {
       console.error("Error:", error);
     }
-  }
+  };
 
   const handleSubmit = async () => {
     try {
       console.log("userInput:---");
       console.log(userInput);
-      const ast = parser.parse(userInput);
-      console.log(ast);
-      const res = await axios.post("http://localhost:4000/interpreter", ast);
+      // const ast = parser.parse(userInput);
+      // console.log(ast);
+      const res = await axios.post("http://localhost:4000/test", {
+        program: userInput,
+      });
       console.log(res);
       if (res.status === 200) {
         setIsAgendaLoaded(true);
@@ -80,16 +86,16 @@ function App() {
   };
   // end of test code
 
-  function isError(obj){
+  function isError(obj) {
     return obj.hasOwnProperty("Error");
-}
+  }
 
   const handleEvalStep = async () => {
     try {
       if (!isAgendaLoaded) {
         setErrorMessage("Agenda is not loaded!");
         setIsErrorVisible(true);
-        return;     
+        return;
       }
       const res = await axios.get("http://localhost:4000/interpreter/step");
       console.log("res", res);
@@ -99,8 +105,9 @@ function App() {
       if (isError(res.data)) {
         setErrorMessage(res.data.Error);
         setIsErrorVisible(true);
+      } else {
+        setStackFrames(res.data);
       }
-      setStackFrames(res.data);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -165,10 +172,7 @@ function App() {
             </div>
             <div className="col-auto">
               {/* ! this is test code */}
-              <button
-                onClick={handleTest}
-                className="btn btn-warning btn-sm"
-              >
+              <button onClick={handleTest} className="btn btn-warning btn-sm">
                 Test
               </button>
               {/* end of test code */}
