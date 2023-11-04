@@ -39,9 +39,10 @@ function App() {
   const handleTest = async () => {
     try {
       // const ast = parser.parse(userInput);
-      const res = await axios.post("http://localhost:4000/test", {
+      const res = await axios.post("http://localhost:8080/test", {
         program: userInput,
       });
+      console.log(res);
       if (isError(res.data)) {
         setErrorMessage(res.data.Error);
         setIsErrorVisible(true);
@@ -62,7 +63,7 @@ function App() {
       console.log(userInput);
       // const ast = parser.parse(userInput);
       // console.log(ast);
-      const res = await axios.post("http://localhost:4000/test", {
+      const res = await axios.post("http://localhost:8080/interpreter", {
         program: userInput,
       });
       console.log(res);
@@ -77,7 +78,7 @@ function App() {
   // test code
   const handleReset = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/interpreter/reset");
+      const res = await axios.get("http://localhost:8080/interpreter/reset");
       console.log(res.data);
     } catch (error) {
       console.error("Error:", error);
@@ -97,7 +98,7 @@ function App() {
         setIsErrorVisible(true);
         return;
       }
-      const res = await axios.get("http://localhost:4000/interpreter/step");
+      const res = await axios.get("http://localhost:8080/interpreter/step");
       console.log("res", res);
       if (res.data === "") {
         return;
