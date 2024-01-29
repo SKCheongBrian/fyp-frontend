@@ -8,13 +8,14 @@ import axios from "axios";
 
 import { parse } from "flatted";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import StackVisualisation from "./components/stack-visualisation";
 import ErrorBox from "./components/errorbox";
 
 function App() {
-  const [userInput, setUserInput] = useState("");
+  const storedUserInput = localStorage.getItem('storedUserInput');
+  const [userInput, setUserInput] = useState(storedUserInput == null ? "" : storedUserInput);
   const [isAgendaLoaded, setIsAgendaLoaded] = useState(false);
   const [stackFrames, setStackFrames] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -35,6 +36,10 @@ function App() {
 
     reader.readAsText(file);
   };
+
+  useEffect(() => {
+    localStorage.setItem('storedUserInput', userInput);
+  }, [userInput]);
 
   const handleTest = async () => {
     try {
