@@ -23,6 +23,7 @@ function App() {
   const [totalSteps, setTotalSteps] = useState(storedProgramData != null && storedProgramData.stepInfos != null ? storedProgramData.stepInfos.length : null);
   const [currentStep, setCurrentStep] = useState(0);
   const [methodColorMap, setMethodColorMap] = useState(new Map());
+  const [currentMarker, setCurrentMarker] = useState([]);
 
   const handleCodeChange = (newCode) => {
     setUserInput(newCode);
@@ -42,6 +43,15 @@ function App() {
 
   const handleStepChange = (step) => {
     setCurrentStep(step);
+    const currentLine = programData.stepInfos[step].lineNumber - 1;
+    setCurrentMarker([{
+      startRow: currentLine,
+      startCol: 2,
+      endRow: currentLine,
+      endCol: 20,
+      className: 'line',
+      type: 'fullLine'
+    }]);
   };
 
   useEffect(() => {
@@ -155,6 +165,7 @@ function App() {
             fontSize={14}
             showPrintMargin={true}
             showGutter={true}
+            markers={currentMarker}
             highlightActiveLine={true}
             setOptions={{
               enableBasicAutocompletion: true,
@@ -203,7 +214,7 @@ function App() {
         </div>
         <div className="col-lg-6">
           <h2 style={{ marginRight: "10px" }}>Visualization</h2>
-          <StepVisualisation step={programData.stepInfos[currentStep]} methodColorMap = {methodColorMap} />
+          <StepVisualisation step={programData.stepInfos[currentStep]} methodColorMap={methodColorMap} />
         </div>
       </div>
       {isErrorVisible && (

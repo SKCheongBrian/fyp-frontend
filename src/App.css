@@ -9,3 +9,8 @@ h2 {
   margin: 0;
   padding: 0;
 }
+
+.line{
+   position: absolute;
+   background-color: #c3795380;
+}
