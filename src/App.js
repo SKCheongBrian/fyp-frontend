@@ -6,20 +6,23 @@ import "ace-builds/src-noconflict/theme-twilight";
 
 import axios from "axios";
 
-import { parse } from "flatted";
-
 import { useEffect, useState } from "react";
 import "./App.css";
-import StackVisualisation from "./components/stack-visualisation";
 import ErrorBox from "./components/errorbox";
+import StepSlider from "./components/stepslider";
+import StepVisualisation from "./components/step-visualisation";
 
 function App() {
   const storedUserInput = localStorage.getItem('storedUserInput');
+  const storedProgramData = JSON.parse(localStorage.getItem('storedProgramData'));
   const [userInput, setUserInput] = useState(storedUserInput == null ? "" : storedUserInput);
   const [isAgendaLoaded, setIsAgendaLoaded] = useState(false);
-  const [stackFrames, setStackFrames] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isErrorVisible, setIsErrorVisible] = useState(false);
+  const [programData, setProgramData] = useState(storedProgramData);
+  const [totalSteps, setTotalSteps] = useState(storedProgramData != null && storedProgramData.stepInfos != null ? storedProgramData.stepInfos.length : null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [methodColorMap, setMethodColorMap] = useState(new Map());
 
   const handleCodeChange = (newCode) => {
     setUserInput(newCode);
@@ -37,9 +40,17 @@ function App() {
     reader.readAsText(file);
   };
 
+  const handleStepChange = (step) => {
+    setCurrentStep(step);
+  };
+
   useEffect(() => {
     localStorage.setItem('storedUserInput', userInput);
   }, [userInput]);
+
+  useEffect(() => {
+    localStorage.setItem('storedProgramData', JSON.stringify(programData));
+  }, [programData]);
 
   const handleTest = async () => {
     try {
@@ -48,14 +59,14 @@ function App() {
         program: userInput,
       });
       console.log(res);
-      if (isError(res.data)) {
-        setErrorMessage(res.data.Error);
-        setIsErrorVisible(true);
+      if (res.data === null) {
+        // TODO handle this better
+        console.error("There is probably a compilation error");
       } else {
-        const newAst = res.data.AST;
-        const scopes = parse(res.data.scopes);
-        console.log(newAst);
-        console.log(scopes);
+        setProgramData(res.data);
+        setTotalSteps(res.data.stepInfos.length);
+        console.log(programData);
+        console.log(totalSteps);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -88,7 +99,6 @@ function App() {
     } catch (error) {
       console.error("Error:", error);
     }
-    setStackFrames([]);
   };
   // end of test code
 
@@ -112,7 +122,6 @@ function App() {
         setErrorMessage(res.data.Error);
         setIsErrorVisible(true);
       } else {
-        setStackFrames(res.data);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -183,11 +192,18 @@ function App() {
               </button>
               {/* end of test code */}
             </div>
+            {programData && totalSteps && (
+              <StepSlider
+                totalSteps={totalSteps}
+                currentStep={currentStep}
+                onStepChange={handleStepChange}
+              />
+            )}
           </div>
         </div>
         <div className="col-lg-6">
           <h2 style={{ marginRight: "10px" }}>Visualization</h2>
-          <StackVisualisation stackFrames={stackFrames} />
+          <StepVisualisation step={programData.stepInfos[currentStep]} methodColorMap = {methodColorMap} />
         </div>
       </div>
       {isErrorVisible && (
