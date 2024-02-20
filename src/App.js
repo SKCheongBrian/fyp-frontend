@@ -21,7 +21,8 @@ function App() {
   const [isErrorVisible, setIsErrorVisible] = useState(false);
   const [programData, setProgramData] = useState(storedProgramData);
   const [totalSteps, setTotalSteps] = useState(storedProgramData != null && storedProgramData.stepInfos != null ? storedProgramData.stepInfos.length : null);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStepNumber, setCurrentStepNumber] = useState(0);
+  const [currentStep, setCurrentStep] = useState({});
   const [methodColorMap, setMethodColorMap] = useState(new Map());
   const [currentMarker, setCurrentMarker] = useState([]);
 
@@ -41,8 +42,17 @@ function App() {
     reader.readAsText(file);
   };
 
+  useEffect(() =>{
+    console.log(currentStep);
+    if (currentStep && currentStep.exceptionMessage !== undefined) {
+      setErrorMessage(programData.stepInfos[currentStepNumber].exceptionMessage);
+      setIsErrorVisible(true);
+    }
+  }, [currentStep]);
+
   const handleStepChange = (step) => {
-    setCurrentStep(step);
+    setCurrentStepNumber(step);
+    setCurrentStep(programData.stepInfos[step]);
     const currentLine = programData.stepInfos[step].lineNumber - 1;
     setCurrentMarker([{
       startRow: currentLine,
@@ -206,7 +216,7 @@ function App() {
             {programData && totalSteps && (
               <StepSlider
                 totalSteps={totalSteps}
-                currentStep={currentStep}
+                currentStep={currentStepNumber}
                 onStepChange={handleStepChange}
               />
             )}
@@ -214,7 +224,7 @@ function App() {
         </div>
         <div className="col-lg-6">
           <h2 style={{ marginRight: "10px" }}>Visualization</h2>
-          <StepVisualisation step={programData.stepInfos[currentStep]} methodColorMap={methodColorMap} />
+          <StepVisualisation step={currentStep} methodColorMap={methodColorMap} />
         </div>
       </div>
       {isErrorVisible && (

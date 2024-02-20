@@ -23,4 +23,6 @@
   margin-bottom: 20px;
   font-size: 18px;
   color: red;
+  white-space: pre;
+  text-align: left;
 }
