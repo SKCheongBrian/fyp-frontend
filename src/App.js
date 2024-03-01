@@ -1,13 +1,15 @@
 import AceEditor from "react-ace";
 
+import "./App.css";
+
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-twilight";
+import "ace-builds/src-noconflict/theme-github";
 
 import axios from "axios";
 
 import { useEffect, useState } from "react";
-import "./App.css";
 import ErrorBox from "./components/errorbox";
 import StepSlider from "./components/stepslider";
 import StepVisualisation from "./components/step-visualisation";
@@ -23,7 +25,6 @@ function App() {
   const [totalSteps, setTotalSteps] = useState(storedProgramData != null && storedProgramData.stepInfos != null ? storedProgramData.stepInfos.length : null);
   const [currentStepNumber, setCurrentStepNumber] = useState(0);
   const [currentStep, setCurrentStep] = useState({});
-  const [methodColorMap, setMethodColorMap] = useState(new Map());
   const [currentMarker, setCurrentMarker] = useState([]);
 
   const handleCodeChange = (newCode) => {
@@ -42,7 +43,7 @@ function App() {
     reader.readAsText(file);
   };
 
-  useEffect(() =>{
+  useEffect(() => {
     console.log(currentStep);
     if (currentStep && currentStep.exceptionMessage !== undefined) {
       setErrorMessage(programData.stepInfos[currentStepNumber].exceptionMessage);
@@ -52,7 +53,9 @@ function App() {
 
   const handleStepChange = (step) => {
     setCurrentStepNumber(step);
+    if (!programData || !programData.stepInfos || !programData.stepInfos[step]) { return; }
     setCurrentStep(programData.stepInfos[step]);
+    console.log("hais", programData.stepInfos[step])
     const currentLine = programData.stepInfos[step].lineNumber - 1;
     setCurrentMarker([{
       startRow: currentLine,
@@ -70,6 +73,9 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('storedProgramData', JSON.stringify(programData));
+    if (programData.stepInfos) {
+      handleStepChange(0);
+    }
   }, [programData]);
 
   const handleTest = async () => {
@@ -80,8 +86,8 @@ function App() {
       });
       console.log(res);
       if (res.data === null) {
-        // TODO handle this better
-        console.error("There is probably a compilation error");
+        setErrorMessage("There is probably a compilation error. Please double check that your code is compilable.");
+        setIsErrorVisible(true);
       } else {
         setProgramData(res.data);
         setTotalSteps(res.data.stepInfos.length);
@@ -94,21 +100,7 @@ function App() {
   };
 
   const handleSubmit = async () => {
-    try {
-      console.log("userInput:---");
-      console.log(userInput);
-      // const ast = parser.parse(userInput);
-      // console.log(ast);
-      const res = await axios.post("http://localhost:8080/interpreter", {
-        program: userInput,
-      });
-      console.log(res);
-      if (res.status === 200) {
-        setIsAgendaLoaded(true);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    // NOT IN USE
   };
 
   // test code
@@ -153,19 +145,21 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <h1 style={{ marginBottom: 36 }}>Class Diagram</h1>
+    <div className="">
+      <header className="header">
+        <h1>Java Stack and Heap Visualiser</h1>
+      </header>
       <div className="row">
         <div className="col-lg-6">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h2>Code Editor</h2>
-            <button onClick={handleReset} className="btn btn-danger btn-sm">
+            <button onClick={handleReset} className="">
               Reset
             </button>
           </div>
           <AceEditor
             mode="java"
-            theme="twilight"
+            theme="github"
             value={userInput}
             onChange={handleCodeChange}
             name="java-code-editor"
@@ -176,7 +170,7 @@ function App() {
             showPrintMargin={true}
             showGutter={true}
             markers={currentMarker}
-            highlightActiveLine={true}
+            highlightActiveLine={false}
             setOptions={{
               enableBasicAutocompletion: true,
               enableLiveAutocompletion: true,
@@ -194,21 +188,21 @@ function App() {
               />
             </div>
             <div className="col-auto">
-              <button onClick={handleSubmit} className="btn btn-primary btn-sm">
+              <button onClick={handleSubmit} className="">
                 Submit
               </button>
             </div>
             <div className="col-auto">
               <button
                 onClick={handleEvalStep}
-                className="btn btn-success btn-sm"
+                className=""
               >
                 Eval Step
               </button>
             </div>
             <div className="col-auto">
               {/* ! this is test code */}
-              <button onClick={handleTest} className="btn btn-warning btn-sm">
+              <button onClick={handleTest} className="">
                 Test
               </button>
               {/* end of test code */}
@@ -223,8 +217,10 @@ function App() {
           </div>
         </div>
         <div className="col-lg-6">
-          <h2 style={{ marginRight: "10px" }}>Visualization</h2>
-          <StepVisualisation step={currentStep} methodColorMap={methodColorMap} />
+          <h2 style={{ marginBottom: 22, marginRight: "10px" }}>Visualization</h2>
+          <div className="visualisation-container">
+            <StepVisualisation step={currentStep} />
+          </div>
         </div>
       </div>
       {isErrorVisible && (
