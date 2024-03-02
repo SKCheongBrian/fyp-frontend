@@ -18,7 +18,6 @@ function App() {
   const storedUserInput = localStorage.getItem('storedUserInput');
   const storedProgramData = JSON.parse(localStorage.getItem('storedProgramData'));
   const [userInput, setUserInput] = useState(storedUserInput == null ? "" : storedUserInput);
-  const [isAgendaLoaded, setIsAgendaLoaded] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isErrorVisible, setIsErrorVisible] = useState(false);
   const [programData, setProgramData] = useState(storedProgramData);
@@ -73,7 +72,7 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('storedProgramData', JSON.stringify(programData));
-    if (programData.stepInfos) {
+    if (programData && programData.stepInfos) {
       handleStepChange(0);
     }
   }, [programData]);
@@ -118,26 +117,7 @@ function App() {
     return obj.hasOwnProperty("Error");
   }
 
-  const handleEvalStep = async () => {
-    try {
-      if (!isAgendaLoaded) {
-        setErrorMessage("Agenda is not loaded!");
-        setIsErrorVisible(true);
-        return;
-      }
-      const res = await axios.get("http://localhost:8080/interpreter/step");
-      console.log("res", res);
-      if (res.data === "") {
-        return;
-      }
-      if (isError(res.data)) {
-        setErrorMessage(res.data.Error);
-        setIsErrorVisible(true);
-      } else {
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
+  const handleEvalStep = () => {
   };
 
   const handleCloseError = () => {
