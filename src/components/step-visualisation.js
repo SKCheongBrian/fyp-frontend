@@ -25,11 +25,11 @@ const StepVisualisation = ({ step }) => {
 
     // Visualization Constants
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
-    // const innerWidth = width - margin.left - margin.right;
-    // const innerHeight = height - margin.top - margin.bottom;
 
     const source_dest_map = [];
     const heap_references = [];
+
+
 
     // Add a group for the heap visualization
     const heapGroup = svg.append('g')
@@ -336,7 +336,7 @@ const StepVisualisation = ({ step }) => {
   }, [step]);
 
   return (
-      <svg ref={svgRef} viewBox={`0 -500 900 500`} width={800} height={svgHeight}></svg>
+    <svg ref={svgRef} viewBox={`0 -${svgHeight} 900 ${svgHeight}`} width={800} height={svgHeight} overflow='visible'></svg>
   );
 };
 
