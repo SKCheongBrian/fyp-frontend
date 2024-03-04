@@ -23,6 +23,7 @@ h2 {
 .header {
   height: 50px;
   background-color: #333;
+  color: white;
   padding-left: 10px;
   font-size: 20pt;
 }

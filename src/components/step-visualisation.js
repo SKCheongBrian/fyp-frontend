@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
 const StepVisualisation = ({ step }) => {
   const svgRef = useRef(null);
+  const [svgHeight, setSvgHeight] = useState(500);
 
   const boxColour = 'white';
   const variableBoxColour = 'lightgray';
@@ -26,9 +27,6 @@ const StepVisualisation = ({ step }) => {
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
     // const innerWidth = width - margin.left - margin.right;
     // const innerHeight = height - margin.top - margin.bottom;
-
-    // Calculate total height needed for all frames
-    const totalFrameHeight = stackInfo.stackFrames.length * 120 + margin.bottom;
 
     const source_dest_map = [];
     const heap_references = [];
@@ -103,7 +101,7 @@ const StepVisualisation = ({ step }) => {
 
       // Adding synthetic fields below regular fields
       fieldsGroup.selectAll('.synthetic-fields')
-        .data(Object.entries(object.syntheticFields)) 
+        .data(Object.entries(object.syntheticFields))
         .enter()
         .append('rect')
         .attr('x', 0)
@@ -300,6 +298,9 @@ const StepVisualisation = ({ step }) => {
       const id = reference.id;
       const x1 = reference.x + 130;
       const y1 = reference.y;
+      console.log('id', id);
+      console.log('heapObjectsMap', heapObjectsMap);
+      console.log('heapReferences', heap_references);
       const x2 = heapObjectsMap[id].x + 220;
       const y2 = heapObjectsMap[id].y + 30;
       const xm1 = 50 + x1;
@@ -309,15 +310,6 @@ const StepVisualisation = ({ step }) => {
       source_dest_map.push([{ x: x1, y: y1 }, { x: xm1, y: ym1 }, { x: xm2, y: ym2 }, { x: x2, y: y2 }]);
     }
 
-    // const linkGen = d3.linkHorizontal();
-    // console.log("arrow map", source_dest_map);
-    // svg.selectAll("path")
-    //   .data(source_dest_map)
-    //   .join("path")
-    //   .attr("d", linkGen)
-    //   .attr('fill', 'none')
-    //   .attr('stroke', 'black')
-    //   .classed("link", true)
     const line = d3.line()
       .x(d => d.x)
       .y(d => d.y)
@@ -331,10 +323,20 @@ const StepVisualisation = ({ step }) => {
         .attr("d", line(curr));
     }
 
+    const currHeight = svg.node().getBBox().height;
+    if (currHeight > 500) {
+      setSvgHeight(currHeight);
+    } else {
+      setSvgHeight(500);
+    }
+
+    console.log('heapgroup.y', heapGroup.node().getBBox().height);
+
+    console.log("SVG height:", currHeight);
   }, [step]);
 
   return (
-    <svg viewBox='0 -500 900 500' ref={svgRef} width={"100%"} height={"100%"}></svg>
+      <svg ref={svgRef} viewBox={`0 -500 900 500`} width={800} height={svgHeight}></svg>
   );
 };
 
