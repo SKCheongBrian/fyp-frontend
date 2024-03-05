@@ -22,7 +22,7 @@ function App() {
   const [isErrorVisible, setIsErrorVisible] = useState(false);
   const [programData, setProgramData] = useState(storedProgramData);
   const [totalSteps, setTotalSteps] = useState(storedProgramData != null && storedProgramData.stepInfos != null ? storedProgramData.stepInfos.length : null);
-  const [currentStepNumber, setCurrentStepNumber] = useState(0);
+  const [currentStepNumber, setCurrentStepNumber] = useState(null);
   const [currentStep, setCurrentStep] = useState({});
   const [currentMarker, setCurrentMarker] = useState([]);
 
@@ -98,26 +98,20 @@ function App() {
     }
   };
 
-  const handleSubmit = async () => {
-    // NOT IN USE
-  };
-
-  // test code
-  const handleReset = async () => {
-    try {
-      const res = await axios.get("http://localhost:8080/interpreter/reset");
-      console.log(res.data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-  // end of test code
-
   function isError(obj) {
     return obj.hasOwnProperty("Error");
   }
 
-  const handleEvalStep = () => {
+  const handleBackwardStep = () => {
+    if (currentStepNumber > 0) {
+      handleStepChange(currentStepNumber - 1);
+    }
+  };
+
+  const handleForwardStep = () => {
+    if (currentStepNumber < totalSteps - 1) {
+      handleStepChange(currentStepNumber + 1);
+    }
   };
 
   const handleCloseError = () => {
@@ -129,14 +123,11 @@ function App() {
       <header className="header">
         <h1>Java Stack and Heap Visualiser</h1>
       </header>
-      <div className="row">
-        <div className="col-lg-6">
-          <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="content">
+        <div className="l5">
+          <span className="subtitle">
             <h2>Code Editor</h2>
-            <button onClick={handleReset} className="">
-              Reset
-            </button>
-          </div>
+          </span>
           <AceEditor
             mode="java"
             theme="github"
@@ -161,29 +152,33 @@ function App() {
           />
           <div className="row mt-3">
             <div className="col">
-              <input
-                type="file"
-                onChange={handleFileUpload}
-                className="form-control-file"
-              />
+              <label className="button btn-flex">
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }} // Hide the input element
+                />
+                Upload File
+              </label>
+              <span className="stepNumber">Current Step: {currentStepNumber}</span>
             </div>
             <div className="col-auto">
-              <button onClick={handleSubmit} className="">
-                Submit
+              <button onClick={handleBackwardStep} className="button btn-flex">
+                Step Backward
               </button>
             </div>
             <div className="col-auto">
               <button
-                onClick={handleEvalStep}
-                className=""
+                onClick={handleForwardStep}
+                className="button btn-flex"
               >
-                Eval Step
+                Step Forward
               </button>
             </div>
             <div className="col-auto">
               {/* ! this is test code */}
-              <button onClick={handleTest} className="">
-                Test
+              <button onClick={handleTest} className="button btn-flex">
+                Submit Code
               </button>
               {/* end of test code */}
             </div>
@@ -196,7 +191,7 @@ function App() {
             )}
           </div>
         </div>
-        <div className="col-lg-6">
+        <div className="r5">
           <h2 style={{ marginBottom: 22, marginRight: "10px" }}>Visualization</h2>
           <div className="visualisation-container">
             <StepVisualisation step={currentStep} />

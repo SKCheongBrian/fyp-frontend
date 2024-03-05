@@ -1,15 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Yanone+Kaffeesatz:wght@200..700&display=swap');
 
-body {
-  background-color: white !important;
-  color: black !important; /* White text color, if needed */
+html {
+  color: #333;
+  background: #ddd;
 }
 
-h1 {
-  font-family: 'Yanone Kaffeesatz';
-  font-weight: 900;
-  font-size: 1.5em;
-  color: white;
+body, button, input, select, textarea, label, option {
+  font-family: 'Fira Sans';
+  font-weight: 300;
 }
 
 h2 {
@@ -20,17 +18,131 @@ h2 {
   padding: 0;
 }
 
+
 .header {
   height: 50px;
   background-color: #333;
-  color: white;
   padding-left: 10px;
   font-size: 20pt;
+  color:white;
+}
+
+.content {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: hidden;
+  background-color: #ddd;
+}
+
+.l5 {
+  width: calc(50% - 15px);
+  height: calc(100% - 10px);
+  flex: 1;
+  float: left;
+  display: flex;
+  flex-flow: column;
+  padding-left: 10px;
+  padding-right: 5px;
+}
+
+.r5 {
+  width: calc(50% - 15px);
+  height: calc(100% - 10px);
+  flex: 1;
+  float: right;
+  display: flex;
+  flex-flow: column;
+  padding-left: 5px;
+  padding-right: 10px;
 }
 
 .line {
    position: absolute;
    background-color: #b8f7c0;
+}
+
+.btn-flex {
+  height: 32px;
+  flex: 1;
+}
+
+.slider-container{
+  background-color: #e1ecf4;  
+  height: 18px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 7px 5px;
+  margin-top: 3px;
+  border-radius: 3px;
+  border: 1px solid #7aa7c7;
+}
+
+.button {
+  background-color: #e1ecf4;
+  border-radius: 3px;
+  border: 1px solid #7aa7c7;
+  box-shadow: rgba(255, 255, 255, .7) 0 1px 0 0 inset;
+  box-sizing: border-box;
+  color: #333;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", "Liberation Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15385;
+  margin-left: 3px;
+  margin-right: 3px;
+  outline: none;
+  padding: 8px .8em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.stepNumber {
+  background-color: #e1ecf4;
+  border-radius: 3px;
+  border: 1px solid #7aa7c7;
+  box-shadow: rgba(255, 255, 255, .7) 0 1px 0 0 inset;
+  box-sizing: border-box;
+  color: #333;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", "Liberation Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15385;
+  margin-left: 3px;
+  margin-right: 3px;
+  outline: none;
+  padding: 8px .8em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.subtitle {
+  height: 48px;
+  font-size: 16pt;
+  flex: 0 0 48px;
+}
+
+.btnspace {
+  width: 100%;
+  flex: 0 0 36px;
+  display: flex;
+  justify-content: right;
 }
 
 .visualisation-container {
@@ -39,3 +151,9 @@ h2 {
   overflow: auto;
 }
 
+h1 {
+  font-family: 'Yanone Kaffeesatz';
+  font-weight: 900;
+  font-size: 1.5em;
+  color: white;
+}

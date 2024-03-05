@@ -8,6 +8,7 @@ const StepSlider = ({ totalSteps, currentStep, onStepChange }) => {
   };
 
   return (
+    <div>
     <div className="slider-container">
       <input
         type="range"
@@ -17,7 +18,7 @@ const StepSlider = ({ totalSteps, currentStep, onStepChange }) => {
         onChange={handleChange}
         className="slider"
       />
-      <span>Step: {currentStep}</span>
+    </div>
     </div>
   );
 };
