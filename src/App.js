@@ -84,8 +84,8 @@ function App() {
         program: userInput,
       });
       console.log(res);
-      if (res.data === null) {
-        setErrorMessage("There is probably a compilation error. Please double check that your code is compilable.");
+      if (res.data === null || res.data.stepInfos === undefined) {
+        setErrorMessage("There is probably a compilation error. Please double check that your code is compilable.\n");
         setIsErrorVisible(true);
       } else {
         setProgramData(res.data);
@@ -160,7 +160,7 @@ function App() {
                 />
                 Upload File
               </label>
-              <span className="stepNumber">Current Step: {currentStepNumber}</span>
+              <span className="stepNumber">{currentStepNumber != null ? `Current Step: ${currentStepNumber}` : "Please submit a program"}</span>
             </div>
             <div className="col-auto">
               <button onClick={handleBackwardStep} className="button btn-flex">
