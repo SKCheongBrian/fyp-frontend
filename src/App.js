@@ -79,7 +79,21 @@ function App() {
 
   const handleTest = async () => {
     try {
-      // const ast = parser.parse(userInput);
+      const response = await axios.post('http://localhost:4000/run-debugger', {
+        program: userInput,
+      });
+      console.log("reponse from test: ", response);
+      if (response.status == 200) {
+        const program_data = JSON.parse(response.data);
+        console.log("program_data: ", program_data);
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  }
+
+  const handleSubmit = async () => {
+    try {
       const res = await axios.post("http://localhost:8080/test", {
         program: userInput,
       });
@@ -176,11 +190,14 @@ function App() {
               </button>
             </div>
             <div className="col-auto">
-              {/* ! this is test code */}
-              <button onClick={handleTest} className="button btn-flex">
+              <button onClick={handleSubmit} className="button btn-flex">
                 Submit Code
               </button>
-              {/* end of test code */}
+            </div>
+            <div className="col-auto">
+              <button onClick={handleTest} className="button btn-flex">
+                Test server
+              </button>
             </div>
             {programData && totalSteps && (
               <StepSlider
