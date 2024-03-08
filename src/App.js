@@ -4,24 +4,32 @@ import "./App.css";
 
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/theme-twilight";
 import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-noconflict/theme-twilight";
 
 import axios from "axios";
 
 import { useEffect, useState } from "react";
 import ErrorBox from "./components/errorbox";
-import StepSlider from "./components/stepslider";
 import StepVisualisation from "./components/step-visualisation";
+import StepSlider from "./components/stepslider";
 
 function App() {
-  const storedUserInput = localStorage.getItem('storedUserInput');
-  const storedProgramData = JSON.parse(localStorage.getItem('storedProgramData'));
-  const [userInput, setUserInput] = useState(storedUserInput == null ? "" : storedUserInput);
+  const storedUserInput = localStorage.getItem("storedUserInput");
+  const storedProgramData = JSON.parse(
+    localStorage.getItem("storedProgramData"),
+  );
+  const [userInput, setUserInput] = useState(
+    storedUserInput == null ? "" : storedUserInput,
+  );
   const [errorMessage, setErrorMessage] = useState("");
   const [isErrorVisible, setIsErrorVisible] = useState(false);
   const [programData, setProgramData] = useState(storedProgramData);
-  const [totalSteps, setTotalSteps] = useState(storedProgramData != null && storedProgramData.stepInfos != null ? storedProgramData.stepInfos.length : null);
+  const [totalSteps, setTotalSteps] = useState(
+    storedProgramData != null && storedProgramData.stepInfos != null
+      ? storedProgramData.stepInfos.length
+      : null,
+  );
   const [currentStepNumber, setCurrentStepNumber] = useState(null);
   const [currentStep, setCurrentStep] = useState({});
   const [currentMarker, setCurrentMarker] = useState([]);
@@ -45,33 +53,43 @@ function App() {
   useEffect(() => {
     console.log(currentStep);
     if (currentStep && currentStep.exceptionMessage !== undefined) {
-      setErrorMessage(programData.stepInfos[currentStepNumber].exceptionMessage);
+      setErrorMessage(
+        programData.stepInfos[currentStepNumber].exceptionMessage,
+      );
       setIsErrorVisible(true);
     }
   }, [currentStep]);
 
   const handleStepChange = (step) => {
     setCurrentStepNumber(step);
-    if (!programData || !programData.stepInfos || !programData.stepInfos[step]) { return; }
+    if (
+      !programData ||
+      !programData.stepInfos ||
+      !programData.stepInfos[step]
+    ) {
+      return;
+    }
     setCurrentStep(programData.stepInfos[step]);
-    console.log("hais", programData.stepInfos[step])
+    console.log("hais", programData.stepInfos[step]);
     const currentLine = programData.stepInfos[step].lineNumber - 1;
-    setCurrentMarker([{
-      startRow: currentLine,
-      startCol: 2,
-      endRow: currentLine,
-      endCol: 20,
-      className: 'line',
-      type: 'fullLine'
-    }]);
+    setCurrentMarker([
+      {
+        startRow: currentLine,
+        startCol: 2,
+        endRow: currentLine,
+        endCol: 20,
+        className: "line",
+        type: "fullLine",
+      },
+    ]);
   };
 
   useEffect(() => {
-    localStorage.setItem('storedUserInput', userInput);
+    localStorage.setItem("storedUserInput", userInput);
   }, [userInput]);
 
   useEffect(() => {
-    localStorage.setItem('storedProgramData', JSON.stringify(programData));
+    localStorage.setItem("storedProgramData", JSON.stringify(programData));
     if (programData && programData.stepInfos) {
       handleStepChange(0);
     }
@@ -79,27 +97,15 @@ function App() {
 
   const handleTest = async () => {
     try {
-      const response = await axios.post('http://localhost:4000/run-debugger', {
-        program: userInput,
-      });
-      console.log("reponse from test: ", response);
-      if (response.status == 200) {
-        const program_data = JSON.parse(response.data);
-        console.log("program_data: ", program_data);
-      }
-    } catch (error) {
-      console.error("Error: ", error);
-    }
-  }
-
-  const handleSubmit = async () => {
-    try {
+      // const ast = parser.parse(userInput);
       const res = await axios.post("http://localhost:8080/test", {
         program: userInput,
       });
       console.log(res);
       if (res.data === null || res.data.stepInfos === undefined) {
-        setErrorMessage("There is probably a compilation error. Please double check that your code is compilable.\n");
+        setErrorMessage(
+          "There is probably a compilation error. Please double check that your code is compilable.\n",
+        );
         setIsErrorVisible(true);
       } else {
         setProgramData(res.data);
@@ -170,11 +176,15 @@ function App() {
                 <input
                   type="file"
                   onChange={handleFileUpload}
-                  style={{ display: 'none' }} // Hide the input element
+                  style={{ display: "none" }} // Hide the input element
                 />
                 Upload File
               </label>
-              <span className="stepNumber">{currentStepNumber != null ? `Current Step: ${currentStepNumber}` : "Please submit a program"}</span>
+              <span className="stepNumber">
+                {currentStepNumber != null
+                  ? `Current Step: ${currentStepNumber}`
+                  : "Please submit a program"}
+              </span>
             </div>
             <div className="col-auto">
               <button onClick={handleBackwardStep} className="button btn-flex">
@@ -182,22 +192,16 @@ function App() {
               </button>
             </div>
             <div className="col-auto">
-              <button
-                onClick={handleForwardStep}
-                className="button btn-flex"
-              >
+              <button onClick={handleForwardStep} className="button btn-flex">
                 Step Forward
               </button>
             </div>
             <div className="col-auto">
-              <button onClick={handleSubmit} className="button btn-flex">
+              {/* ! this is test code */}
+              <button onClick={handleTest} className="button btn-flex">
                 Submit Code
               </button>
-            </div>
-            <div className="col-auto">
-              <button onClick={handleTest} className="button btn-flex">
-                Test server
-              </button>
+              {/* end of test code */}
             </div>
             {programData && totalSteps && (
               <StepSlider
@@ -209,7 +213,9 @@ function App() {
           </div>
         </div>
         <div className="r5">
-          <h2 style={{ marginBottom: 22, marginRight: "10px" }}>Visualization</h2>
+          <h2 style={{ marginBottom: 22, marginRight: "10px" }}>
+            Visualization
+          </h2>
           <div className="visualisation-container">
             <StepVisualisation step={currentStep} />
           </div>
