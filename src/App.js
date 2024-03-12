@@ -98,7 +98,7 @@ function App() {
   const handleTest = async () => {
     try {
       // const ast = parser.parse(userInput);
-      const res = await axios.post("http://localhost:8080/test", {
+      const res = await axios.post("http://localhost:4000/run-debugger", {
         program: userInput,
       });
       console.log(res);
