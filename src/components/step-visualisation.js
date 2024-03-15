@@ -10,19 +10,17 @@ const StepVisualisation = ({ step }) => {
   const textColour = 'black';
 
   useEffect(() => {
-    if (!step) return;
+    const svg = d3.select(svgRef.current);
+    svg.selectAll('*').remove();
+    if (!step) {
+      return;
+    }
 
     const stackInfo = step.stackInfo;
     const heapInfo = step.heapInfo;
     const staticInfo = step.staticInfo;
 
     if (!stackInfo || !heapInfo || !staticInfo) return;
-
-    const svg = d3.select(svgRef.current);
-
-    // Clear existing visualization
-    svg.selectAll('*').remove();
-
     // Visualization Constants
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 

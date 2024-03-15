@@ -17,19 +17,20 @@ import StepSlider from "./components/stepslider";
 function App() {
   const storedUserInput = localStorage.getItem("storedUserInput");
   const storedProgramData = JSON.parse(
-    localStorage.getItem("storedProgramData"),
+    localStorage.getItem("storedProgramData")
   );
   const [userInput, setUserInput] = useState(
-    storedUserInput == null ? "" : storedUserInput,
+    storedUserInput == null ? "" : storedUserInput
   );
   const [errorMessage, setErrorMessage] = useState("");
   const [isErrorVisible, setIsErrorVisible] = useState(false);
   const [programData, setProgramData] = useState(storedProgramData);
   const [totalSteps, setTotalSteps] = useState(
-    storedProgramData != null && storedProgramData.stepInfos != null
+    storedProgramData?.stepInfos != null
       ? storedProgramData.stepInfos.length
-      : null,
+      : null
   );
+  const [isLoading, setIsLoading] = useState(false);
   const [currentStepNumber, setCurrentStepNumber] = useState(null);
   const [currentStep, setCurrentStep] = useState({});
   const [currentMarker, setCurrentMarker] = useState([]);
@@ -54,7 +55,7 @@ function App() {
     console.log(currentStep);
     if (currentStep && currentStep.exceptionMessage !== undefined) {
       setErrorMessage(
-        programData.stepInfos[currentStepNumber].exceptionMessage,
+        programData.stepInfos[currentStepNumber].exceptionMessage
       );
       setIsErrorVisible(true);
     }
@@ -62,11 +63,7 @@ function App() {
 
   const handleStepChange = (step) => {
     setCurrentStepNumber(step);
-    if (
-      !programData ||
-      !programData.stepInfos ||
-      !programData.stepInfos[step]
-    ) {
+    if (!programData?.stepInfos?.[step]) {
       return;
     }
     setCurrentStep(programData.stepInfos[step]);
@@ -90,23 +87,27 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem("storedProgramData", JSON.stringify(programData));
-    if (programData && programData.stepInfos) {
+    if (programData?.stepInfos) {
       handleStepChange(0);
     }
   }, [programData]);
 
   const handleTest = async () => {
+    setIsLoading(true);
     try {
-      // const ast = parser.parse(userInput);
-      const res = await axios.post("http://localhost:4000/run-debugger", {
+      const res = await axios.post("https://thisisadi.yoga:2030/run-debugger", {
         program: userInput,
       });
       console.log(res);
       if (res.data === null || res.data.stepInfos === undefined) {
         setErrorMessage(
-          "There is probably a compilation error. Please double check that your code is compilable.\n",
+          "There is probably a compilation error. Please double check that your code is compilable.\n"
         );
         setIsErrorVisible(true);
+        setProgramData(null);
+        setCurrentStep({});
+        setCurrentMarker([]);
+        setCurrentStepNumber(null);
       } else {
         setProgramData(res.data);
         setTotalSteps(res.data.stepInfos.length);
@@ -115,12 +116,11 @@ function App() {
       }
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
+      console.log("currentStep after clearing: ", currentStep);
     }
   };
-
-  function isError(obj) {
-    return obj.hasOwnProperty("Error");
-  }
 
   const handleBackwardStep = () => {
     if (currentStepNumber > 0) {
@@ -176,7 +176,7 @@ function App() {
                 <input
                   type="file"
                   onChange={handleFileUpload}
-                  style={{ display: "none" }} // Hide the input element
+                  style={{ display: "none" }}
                 />
                 Upload File
               </label>
@@ -197,11 +197,9 @@ function App() {
               </button>
             </div>
             <div className="col-auto">
-              {/* ! this is test code */}
               <button onClick={handleTest} className="button btn-flex">
                 Submit Code
               </button>
-              {/* end of test code */}
             </div>
             {programData && totalSteps && (
               <StepSlider
@@ -224,6 +222,10 @@ function App() {
       {isErrorVisible && (
         <ErrorBox message={errorMessage} onClose={handleCloseError} />
       )}
+      <div className={isLoading ? "loading-spinner-container" : ""}>
+        {isLoading && <div className="loading-spinner"></div>}
+        {isLoading && <div >Loading...</div>}
+      </div>
     </div>
   );
 }
