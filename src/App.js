@@ -92,6 +92,17 @@ function App() {
     }
   }, [programData]);
 
+  function compilationError() {
+    setErrorMessage(
+      "There is probably a compilation error. Please double check that your code is compilable.\n"
+    );
+    setIsErrorVisible(true);
+    setProgramData(null);
+    setCurrentStep({});
+    setCurrentMarker([]);
+    setCurrentStepNumber(null);
+  }
+
   const handleTest = async () => {
     setIsLoading(true);
     try {
@@ -100,14 +111,7 @@ function App() {
       });
       console.log(res);
       if (res.data === null || res.data.stepInfos === undefined) {
-        setErrorMessage(
-          "There is probably a compilation error. Please double check that your code is compilable.\n"
-        );
-        setIsErrorVisible(true);
-        setProgramData(null);
-        setCurrentStep({});
-        setCurrentMarker([]);
-        setCurrentStepNumber(null);
+        compilationError();
       } else {
         setProgramData(res.data);
         setTotalSteps(res.data.stepInfos.length);
