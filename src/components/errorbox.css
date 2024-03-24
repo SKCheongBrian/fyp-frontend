@@ -1,13 +1,14 @@
 .error-box-container {
   position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  background: rgba(0, 0, 0, 0.5);
   z-index: 9999;
 }
 
@@ -17,12 +18,17 @@
   border-radius: 8px;
   box-shadow: 10px 5px 5px black;
   text-align: center;
+  overflow: auto;
+  width: 400px;
+  height: 300px;
 }
 
 .error-message {
   margin-bottom: 20px;
+  word-wrap: break-word; 
   font-size: 18px;
   color: black;
-  white-space: pre;
+  white-space: pre-wrap; 
   text-align: left;
 }
+

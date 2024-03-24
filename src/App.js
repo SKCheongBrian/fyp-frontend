@@ -92,9 +92,9 @@ function App() {
     }
   }, [programData]);
 
-  function compilationError() {
+  function compilationError(errorMessage) {
     setErrorMessage(
-      "There is probably a compilation error. Please double check that your code is compilable.\n"
+      "There is probably a compilation error. Please double check that your code is compilable.\n\n" + errorMessage
     );
     setIsErrorVisible(true);
     setProgramData(null);
@@ -109,14 +109,15 @@ function App() {
       const res = await axios.post("https://thisisadi.yoga:2030/run-debugger", {
         program: userInput,
       });
-      console.log(res);
-      if (res.data === null || res.data.stepInfos === undefined) {
-        compilationError();
+      console.log("res:", res);
+      if (!res.data.isSuccess) {
+        const errorMessage = res.data.errorMessage;
+        compilationError(errorMessage);
       } else {
         setProgramData(res.data);
         setTotalSteps(res.data.stepInfos.length);
-        console.log(programData);
-        console.log(totalSteps);
+        console.log("programData: ", programData);
+        console.log("totalSteps: ", totalSteps);
       }
     } catch (error) {
       console.error("Error:", error);
