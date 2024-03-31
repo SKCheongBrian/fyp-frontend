@@ -13,6 +13,14 @@ import { useEffect, useState } from "react";
 import ErrorBox from "./components/errorbox";
 import StepVisualisation from "./components/step-visualisation";
 import StepSlider from "./components/stepslider";
+import DropDown from "./components/dropdown";
+
+import AliasExample from "./examples/Alias.java";
+import ConstructorExample from "./examples/Constructor.java";
+import VariableCaptureExample from "./examples/VariableCapture.java";
+import ScopingExample from "./examples/Scoping.java";
+import StackFrameExample from "./examples/StackFrame.java";
+import StackVsHeapExample from "./examples/StackVsHeap.java";
 
 function App() {
   const storedUserInput = localStorage.getItem("storedUserInput");
@@ -35,7 +43,188 @@ function App() {
   const [currentStep, setCurrentStep] = useState({});
   const [currentMarker, setCurrentMarker] = useState([]);
 
+  const exampleOptions = [
+    { label: "Examples", value: "" },
+    {
+      label: "Alias",
+      value: `
+class Point {
+  public final int x;
+  public final int y;
+
+  public Point(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Alias {
+  public static Point mystery(Point p) {
+    p = new Point(2, 2);
+    return p;
+  }
+
+  public static void main(String[] args) {
+    Point p = new Point(1, 1);
+    Point p2 = mystery(p); // notice that p points to same object
+  }
+}
+    `,
+    },
+    {
+      label: "Constructor",
+      value: `
+class Node {
+  private int value;
+  private Node next;
+
+  public Node(int value, Node next) {
+    this.value = value;
+    this.next = next;
+  }
+
+  public Node(int value) {
+    this.value = value;
+  }
+}
+
+class Constructor {
+  private int a;
+  private int b;
+  private int c;
+  private Node node;
+
+  public Constructor(int a, int b, int c, Node node) {
+    this.a = a;
+    this.b = b;
+    this.c = c;
+    this.node = node;
+  }
+  
+  public static void main(String[] args) {
+    Constructor example = new Constructor(1, 2, 3, new Node(4));
+  }
+}
+    `,
+    },
+    {
+      label: "Scoping",
+      value: `
+public class Scoping {
+  private int x;
+
+  public Scoping(int x) {
+    this.x = x;
+  }
+
+  private void firstMethod() {
+    x = 2; // Notice this changes this.x
+    int x = 2; // Notice a new variable is added onto stack
+    this.x = x + 10; // x on right hand side refers to variable x
+    secondMethod(x);
+  }
+
+  private void secondMethod(int x) {
+    x = 10;
+    this.x = x - 10;
+  }
+
+  public static void main(String[] args) {
+    Scoping scoping = new Scoping(1);
+    scoping.firstMethod();
+  }
+}
+    `,
+    },
+    {
+      label: "StackFrame",
+      value: `
+public class StackFrame {
+  public static void foo() {
+    int x = 2;
+    bar(x + 1);
+  }
+
+  public static void bar(int x) {
+    baz(x + 1);
+  }
+
+  public static void baz(int x) {
+    x = 4;
+  }
+
+  public static void main(String[] args) {
+    int x = 1;
+    foo();
+  }
+}
+`,
+    },
+    {
+      label: "StackVsHeap",
+      value: `
+public class StackVsHeap {
+  public static void main(String[] args) {
+    int x = 1; // notice this is on the stack
+    Integer y1 = 2; // notice this is on the heap
+    Integer y2 = 2; // notice the caching for values <= 128
+    Integer z1 = 129; // notice this is > 128
+    Integer z2 = 129; // notice no caching (new Integer created)
+    boolean b = true; // on the stack
+    Boolean b2 = true; // created on the heap
+    Boolean b3 = true; // on the heap with caching
+  }  
+}
+`,
+    },
+    {
+      label: "VariableCapture",
+      value: `
+interface C {
+  void g();
+}
+    
+class A {
+  int x = 1;
+    
+  C f() {
+    int y = 2;
+
+    class B implements C {
+      @Override
+      public void g() {
+        x = y; // accessing x and y is OK.
+      }
+    }
+
+    B b = new B();
+    return b;
+  }
+}
+    
+public class VariableCapture {
+  public static void main(String[] args) {
+    A a = new A();
+    C b = a.f(); // notice y is no longer on stack
+    b.g(); // uses the captured variable (val$y) to get value of y
+    // notice the value of a's x
+  }
+}
+`,
+    },
+  ];
+
+  const handleExampleChange = (selectedOption) => {
+    const selectedValue = selectedOption.target.value;
+    console.log("selected option: ", selectedOption);
+    console.log("selectedvalue: ", selectedValue);
+    setUserInput(selectedValue);
+  };
+
   const handleCodeChange = (newCode) => {
+    setCurrentStep({});
+    setCurrentMarker([]);
+    setCurrentStepNumber(null);
     setUserInput(newCode);
   };
 
@@ -94,7 +283,8 @@ function App() {
 
   function compilationError(errorMessage) {
     setErrorMessage(
-      "There is probably a compilation error. Please double check that your code is compilable.\n\n" + errorMessage
+      "There is probably a compilation error. Please double check that your code is compilable.\n\n" +
+        errorMessage
     );
     setIsErrorVisible(true);
     setProgramData(null);
@@ -143,6 +333,10 @@ function App() {
     setIsErrorVisible(false);
   };
 
+  const handleFeedback = () => {
+    window.location.href = "https://forms.gle/paS2rmhDB6VupNUVA"
+  }
+
   return (
     <div className="">
       <header className="header">
@@ -152,6 +346,12 @@ function App() {
         <div className="l5">
           <span className="subtitle">
             <h2>Code Editor</h2>
+            <DropDown
+              options={exampleOptions}
+              onChange={handleExampleChange}
+            ></DropDown>
+            <button onClick={handleFeedback} className="button">Feedback</button>
+
           </span>
           <AceEditor
             mode="java"
@@ -229,7 +429,7 @@ function App() {
       )}
       <div className={isLoading ? "loading-spinner-container" : ""}>
         {isLoading && <div className="loading-spinner"></div>}
-        {isLoading && <div >Loading...</div>}
+        {isLoading && <div>Loading...</div>}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import "./errorbox.css"; // Import the ErrorBox CSS file
+import "./errorbox.css";
 
 const ErrorBox = ({ message, onClose }) => {
   return (
