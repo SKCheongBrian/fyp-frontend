@@ -334,7 +334,7 @@ public class VariableCapture {
   };
 
   const handleFeedback = () => {
-    window.location.href = "https://forms.gle/paS2rmhDB6VupNUVA"
+    window.open("https://forms.gle/paS2rmhDB6VupNUVA", "_blank");
   }
 
   return (
