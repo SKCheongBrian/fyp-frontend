@@ -172,7 +172,7 @@ const StepVisualisation = ({ step }) => {
         .attr('transform', `translate(${10}, ${margin.top + stackY + 10})`); // Adjust coordinates to include margin
 
       variablesGroup.selectAll('.variable')
-        .data(Object.entries(frame.localVariables))
+        .data(frame.localVariables)
         .enter()
         .append('rect')
         .attr('x', 0)
@@ -188,7 +188,9 @@ const StepVisualisation = ({ step }) => {
         .enter()
         .append('text')
         .attr('x', 10).attr('y', (_, i) => i * 20 + 14) // Using the second parameter i as the index .text(d => `${d[0]}: ${d[1].value ? d[1].value : ""}`)
-        .text(d => `${d[0]}: ${d[1].value ? d[1].value : ""}`)
+        .text(d => {
+          return `${d[1].name}: ${d[1].value ? d[1].value : ""}`;
+        })
         .style('fill', textColour); // Set text color to black
 
       // Draw curved arrows to heap objects for object references
