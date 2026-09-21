@@ -193,6 +193,16 @@ h2 {
   height: 500px;
   width: 100%;
   overflow: auto;
+  display: flex;
+  /* Anchor the SVG at the editor's bottom; overflowing content scrolls upward. */
+  flex-direction: column-reverse;
+}
+
+.visualisation-container > svg {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  height: auto;
 }
 
 h1 {

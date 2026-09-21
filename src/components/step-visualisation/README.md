@@ -45,6 +45,13 @@ The rendering components must use the coordinates from this result rather than
 recalculating geometry. This keeps reference endpoints and box positions in
 sync.
 
+All three columns grow upward from one shared baseline. The SVG scales with
+the pane width and is anchored at the bottom of the 500px editor-height pane;
+taller diagrams can be scrolled upward without moving the base on each step.
+Reference arrows are painted after the memory boxes so they visibly begin at
+the variable-row border. Heap-to-heap arrows route around the right side of the
+column to avoid crossing variable labels.
+
 ## Tests
 
 Run all tests once with:

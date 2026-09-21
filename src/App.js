@@ -292,8 +292,9 @@ public class VariableCapture {
 
   const handleTest = async () => {
     setIsLoading(true);
+    setIsErrorVisible(false);
     try {
-      const res = await axios.post("https://thisisadi.yoga:2030/run-debugger", {
+      const res = await axios.post(process.env.REACT_APP_DEBUGGER_URL || "https://thisisadi.yoga:2030/run-debugger", {
         program: userInput,
       });
       console.log("res:", res);
@@ -306,11 +307,15 @@ public class VariableCapture {
 
         setProgramData(annotatedProgramData);
         setTotalSteps(annotatedProgramData.stepInfos.length);
+        setCurrentStepNumber(annotatedProgramData.stepInfos.length ? 0 : null);
         console.log("programData: ", programData);
         console.log("totalSteps: ", totalSteps);
       }
     } catch (error) {
       console.error("Error:", error);
+      setErrorMessage(error.response?.data?.errorMessage ||
+        "Could not reach the Java backend. Check your connection and try again.");
+      setIsErrorVisible(true);
     } finally {
       setIsLoading(false);
       console.log("currentStep after clearing: ", currentStep);
@@ -402,7 +407,7 @@ public class VariableCapture {
               </button>
             </div>
             <div className="col-auto">
-              <button onClick={handleTest} className="button btn-flex">
+              <button onClick={handleTest} disabled={isLoading} className="button btn-flex">
                 Submit Code
               </button>
             </div>
@@ -416,9 +421,9 @@ public class VariableCapture {
           </div>
         </div>
         <div className="r5">
-          <h2 style={{ marginBottom: 22, marginRight: "10px" }}>
-            Visualization
-          </h2>
+          <div className="subtitle">
+            <h2>Visualization</h2>
+          </div>
           <div className="visualisation-container">
             <StepVisualisation step={currentStep} />
           </div>

@@ -4,17 +4,17 @@ const SELF_REFERENCE_OFFSET = 60;
 /**
  * Creates an SVG cubic Bézier path for one resolved reference.
  *
- * Normal references bend midway between their source and target. A heap field
- * that points to its own object is routed outside the object's right edge so it
- * remains visible instead of crossing the box.
+ * Normal references bend midway between their source and target. Heap fields
+ * route outside the column's right edge, including self-references, so the
+ * visible paths do not cross variable labels.
  *
  * @param {Object} reference Positioned reference from calculateLayout.
  * @returns {string} SVG path-data string.
  */
 export function createReferencePath(reference) {
-  const { source, target, isSelfReference } = reference;
+  const { source, target, isSelfReference, routeOutside } = reference;
 
-  if (isSelfReference) {
+  if (isSelfReference || routeOutside) {
     const loopX = Math.max(source.x, target.x) + SELF_REFERENCE_OFFSET;
 
     return [
@@ -41,7 +41,8 @@ export function createReferencePath(reference) {
 }
 
 /**
- * Renders reference arrows behind the memory boxes.
+ * Renders reference arrows above memory boxes so their variable-row origins
+ * remain visible across the containing box's padding.
  *
  * @param {{references: Array<Object>}} props Resolved layout references.
  * @returns {JSX.Element} SVG group containing arrow definitions and paths.

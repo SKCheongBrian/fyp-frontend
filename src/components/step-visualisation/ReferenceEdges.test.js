@@ -42,4 +42,13 @@ describe("ReferenceEdges", () => {
     expect(edge).toHaveAttribute("marker-end", "url(#reference-arrowhead)");
     expect(edge).toHaveAttribute("data-self-reference", "false");
   });
+
+  test("routes references between heap objects around the column", () => {
+    expect(createReferencePath({
+      source: { x: 510, y: 450 },
+      target: { x: 520, y: 350 },
+      isSelfReference: false,
+      routeOutside: true,
+    })).toBe("M 510 450 C 580 450, 580 350, 520 350");
+  });
 });

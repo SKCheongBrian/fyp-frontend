@@ -77,6 +77,9 @@ describe("StepVisualisation", () => {
       screen.getByRole("group", { name: "Static class Example" })
     ).toBeInTheDocument();
     expect(screen.getAllByTestId("reference-edge")).toHaveLength(2);
+    // SVG paints in DOM order: the frame backgrounds must not hide arrow origins.
+    expect(visualization.lastElementChild).toHaveAttribute("aria-label", "Object references");
+    expect(visualization).toHaveAttribute("preserveAspectRatio", "xMinYMax meet");
   });
 
   test("renders annotated change colours", () => {

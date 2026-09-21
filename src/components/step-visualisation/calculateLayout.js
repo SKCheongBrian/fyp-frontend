@@ -91,29 +91,28 @@ function positionBox(box, x, y) {
   };
 }
 
-/**
- * Positions a collection of boxes in one bottom-up visualization column.
- *
- * The backend's first item is drawn at the bottom, preserving the convention
- * used by the original visualization. Later items are placed above it with a
- * consistent gap. All coordinates remain positive, so consumers can use a
- * conventional SVG viewBox starting at (0, 0).
- *
- * @param {Array<Object>} boxes Unpositioned boxes in backend order.
- * @param {number} x Horizontal position shared by the column's boxes.
- * @returns {{boxes: Array<Object>, height: number}} Positioned boxes and the
- * total amount of vertical space occupied by the column.
- */
-function layoutColumn(boxes, x) {
-  const columnHeight = boxes.reduce(
+/** Returns the combined box heights and gaps in an unpositioned column. */
+function getColumnHeight(boxes) {
+  return boxes.reduce(
     (height, box, index) =>
       height +
       box.height +
       (index === boxes.length - 1 ? 0 : BOX.gap),
     0
   );
+}
 
-  let cursor = COLUMN_TOP + columnHeight;
+/**
+ * Positions boxes bottom-up from a shared baseline. The first backend frame
+ * stays at the bottom; later frames sit above it with a consistent gap.
+ *
+ * @param {Array<Object>} boxes Unpositioned boxes in backend order.
+ * @param {number} x Horizontal position shared by the column's boxes.
+ * @param {number} baseline Bottom edge shared by all columns.
+ * @returns {{boxes: Array<Object>, height: number}} Positioned column.
+ */
+function layoutColumn(boxes, x, baseline) {
+  let cursor = baseline;
 
   const positionedBoxes = boxes.map((box) => {
     cursor -= box.height;
@@ -126,7 +125,7 @@ function layoutColumn(boxes, x) {
 
   return {
     boxes: positionedBoxes,
-    height: columnHeight,
+    height: getColumnHeight(boxes),
   };
 }
 
@@ -288,13 +287,14 @@ function createReferences(boxes, objectAnchors) {
 
       const isSelfReference =
         box.kind === "heap" && box.objectId === objectId;
+      const routeOutside = box.kind === "heap";
       const rowCentreX = row.x + row.width / 2;
       const sourceIsLeftOfTarget =
-        !isSelfReference && rowCentreX < targetObject.centreX;
+        !routeOutside && rowCentreX < targetObject.centreX;
 
       const source = {
         x:
-          sourceIsLeftOfTarget || isSelfReference
+          sourceIsLeftOfTarget || routeOutside
             ? row.x + row.width
             : row.x,
         y: row.y + row.height / 2,
@@ -313,6 +313,7 @@ function createReferences(boxes, objectAnchors) {
           target,
           sourceBoxKey: box.key,
           isSelfReference,
+          routeOutside,
         },
       ];
     })
@@ -344,18 +345,20 @@ export default function calculateLayout(step) {
     };
   }
 
-  const stack = layoutColumn(
-    createStackBoxes(step),
-    COLUMN_X.stack
+  const stackBoxes = createStackBoxes(step);
+  const heapBoxes = createHeapBoxes(step);
+  const staticBoxes = createStaticBoxes(step);
+  const contentHeight = Math.max(
+    getColumnHeight(stackBoxes),
+    getColumnHeight(heapBoxes),
+    getColumnHeight(staticBoxes)
   );
-  const heap = layoutColumn(
-    createHeapBoxes(step),
-    COLUMN_X.heap
-  );
-  const staticColumn = layoutColumn(
-    createStaticBoxes(step),
-    COLUMN_X.static
-  );
+  // Leave one SVG unit below the common baseline so the border is not clipped.
+  const height = Math.max(MIN_SVG_HEIGHT, contentHeight + COLUMN_TOP + 1);
+  const baseline = height - 1;
+  const stack = layoutColumn(stackBoxes, COLUMN_X.stack, baseline);
+  const heap = layoutColumn(heapBoxes, COLUMN_X.heap, baseline);
+  const staticColumn = layoutColumn(staticBoxes, COLUMN_X.static, baseline);
 
   const objectAnchors = getObjectAnchors(heap.boxes);
 
@@ -364,18 +367,9 @@ export default function calculateLayout(step) {
     objectAnchors
   );
 
-  const contentHeight = Math.max(
-    stack.height,
-    heap.height,
-    staticColumn.height
-  );
-
   return {
     width: SVG_WIDTH,
-    height: Math.max(
-      MIN_SVG_HEIGHT,
-      contentHeight + COLUMN_TOP * 2
-    ),
+    height,
     stackBoxes: stack.boxes,
     heapBoxes: heap.boxes,
     staticBoxes: staticColumn.boxes,

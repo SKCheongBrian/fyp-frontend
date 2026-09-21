@@ -132,6 +132,35 @@ describe("calculateLayout", () => {
     ]);
   });
 
+  test("all columns share the same bottom baseline despite different heights", () => {
+    const layout = calculateLayout(createStep());
+    for (const boxes of [layout.stackBoxes, layout.heapBoxes, layout.staticBoxes]) {
+      expect(boxes[0].y + boxes[0].height).toBe(layout.height - 1);
+    }
+  });
+
+  test("pushing and popping frames preserves the base, including overflowing stacks", () => {
+    const step = createStep();
+    const original = calculateLayout(step);
+    const main = original.stackBoxes[0];
+    step.stackInfo.stackFrames.push({ methodName: "bar", localVariables: [] });
+    const pushed = calculateLayout(step);
+    expect(pushed.stackBoxes[0].y).toBe(main.y);
+    expect(pushed.stackBoxes[2].y).toBeLessThan(pushed.stackBoxes[1].y);
+
+    step.stackInfo.stackFrames.push(...Array.from({ length: 20 }, (_, i) => ({
+      methodName: `nested${i}`, localVariables: [],
+    })));
+    const overflowing = calculateLayout(step);
+    expect(overflowing.height).toBeGreaterThan(MIN_SVG_HEIGHT);
+    // Bottom-aligned SVGs preserve the screen position relative to their bottom.
+    expect(overflowing.height - overflowing.stackBoxes[0].y).toBe(original.height - main.y);
+    expect(overflowing.stackBoxes.at(-1).y).toBe(COLUMN_TOP);
+
+    step.stackInfo.stackFrames.splice(1);
+    expect(calculateLayout(step).stackBoxes[0].y).toBe(main.y);
+  });
+
   test("preserves change state and boolean flags on positioned rows", () => {
     const layout = calculateLayout(createStep());
     const nodeBox = layout.heapBoxes.find((box) => box.objectId === "10");
@@ -177,6 +206,24 @@ describe("calculateLayout", () => {
       })
     );
     expect(selfReference.source.x).toBeLessThan(selfReference.target.x);
+  });
+
+  test("arrows start at variable-row borders, including heap-to-heap references", () => {
+    const layout = calculateLayout(createStep());
+    for (const reference of layout.references) {
+      const box = [...layout.stackBoxes, ...layout.heapBoxes, ...layout.staticBoxes]
+        .find(candidate => candidate.key === reference.sourceBoxKey);
+      const row = box.rows.find(candidate => String(candidate.variable.id) === reference.objectId);
+      const rightEdge = box.kind !== "static";
+      expect(reference.source).toEqual({
+        x: rightEdge ? row.x + row.width : row.x,
+        y: row.y + row.height / 2,
+      });
+      if (box.kind === "heap") {
+        expect(reference.routeOutside).toBe(true);
+        expect(reference.target).toEqual(layout.objectAnchors[reference.objectId].right);
+      }
+    }
   });
 
   test("ignores references to heap objects absent from the snapshot", () => {

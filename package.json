@@ -22,8 +22,11 @@
   },
   "scripts": {
     "start": "PORT=2030 react-scripts start",
+    "start:local": "node scripts/start-local.cjs",
+    "start:api": "node server/local-api.cjs",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:api": "node --test server/local-api.test.cjs",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

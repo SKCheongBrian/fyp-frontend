@@ -22,13 +22,13 @@ export default function StepVisualisation({ step }) {
       viewBox={`0 0 ${layout.width} ${layout.height}`}
       width="100%"
       height={layout.height}
-      preserveAspectRatio="xMinYMin meet"
+      preserveAspectRatio="xMinYMax meet"
     >
       <title>Java stack, heap, and static memory</title>
-      <ReferenceEdges references={layout.references} />
       <StackColumn boxes={layout.stackBoxes} />
       <HeapColumn boxes={layout.heapBoxes} />
       <StaticColumn boxes={layout.staticBoxes} />
+      <ReferenceEdges references={layout.references} />
     </svg>
   );
 }
