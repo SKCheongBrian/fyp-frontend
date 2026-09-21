@@ -9,18 +9,19 @@ import "ace-builds/src-noconflict/theme-twilight";
 
 import axios from "axios";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ErrorBox from "./components/errorbox";
 import StepVisualisation from "./components/step-visualisation";
 import StepSlider from "./components/stepslider";
 import DropDown from "./components/dropdown";
+import annotateProgramChanges from "./components/transforms/annotateProgramChanges";
 
-import AliasExample from "./examples/Alias.java";
-import ConstructorExample from "./examples/Constructor.java";
-import VariableCaptureExample from "./examples/VariableCapture.java";
-import ScopingExample from "./examples/Scoping.java";
-import StackFrameExample from "./examples/StackFrame.java";
-import StackVsHeapExample from "./examples/StackVsHeap.java";
+// import AliasExample from "./examples/Alias.java";
+// import ConstructorExample from "./examples/Constructor.java";
+// import VariableCaptureExample from "./examples/VariableCapture.java";
+// import ScopingExample from "./examples/Scoping.java";
+// import StackFrameExample from "./examples/StackFrame.java";
+// import StackVsHeapExample from "./examples/StackVsHeap.java";
 
 function App() {
   const storedUserInput = localStorage.getItem("storedUserInput");
@@ -241,22 +242,18 @@ public class VariableCapture {
   };
 
   useEffect(() => {
-    console.log(currentStep);
-    if (currentStep && currentStep.exceptionMessage !== undefined) {
-      setErrorMessage(
-        programData.stepInfos[currentStepNumber].exceptionMessage
-      );
+    if (currentStep?.exceptionMessage) {
+      setErrorMessage(currentStep.exceptionMessage);
       setIsErrorVisible(true);
     }
   }, [currentStep]);
 
-  const handleStepChange = (step) => {
+  const handleStepChange = useCallback((step) => {
     setCurrentStepNumber(step);
     if (!programData?.stepInfos?.[step]) {
       return;
     }
     setCurrentStep(programData.stepInfos[step]);
-    console.log("hais", programData.stepInfos[step]);
     const currentLine = programData.stepInfos[step].lineNumber - 1;
     setCurrentMarker([
       {
@@ -268,7 +265,7 @@ public class VariableCapture {
         type: "fullLine",
       },
     ]);
-  };
+  }, [programData]);
 
   useEffect(() => {
     localStorage.setItem("storedUserInput", userInput);
@@ -279,12 +276,12 @@ public class VariableCapture {
     if (programData?.stepInfos) {
       handleStepChange(0);
     }
-  }, [programData]);
+  }, [handleStepChange, programData]);
 
   function compilationError(errorMessage) {
     setErrorMessage(
       "There is probably a compilation error. Please double check that your code is compilable.\n\n" +
-        errorMessage
+      errorMessage
     );
     setIsErrorVisible(true);
     setProgramData(null);
@@ -304,8 +301,11 @@ public class VariableCapture {
         const errorMessage = res.data.errorMessage;
         compilationError(errorMessage);
       } else {
-        setProgramData(res.data);
-        setTotalSteps(res.data.stepInfos.length);
+        const annotatedProgramData =
+          annotateProgramChanges(res.data);
+
+        setProgramData(annotatedProgramData);
+        setTotalSteps(annotatedProgramData.stepInfos.length);
         console.log("programData: ", programData);
         console.log("totalSteps: ", totalSteps);
       }
